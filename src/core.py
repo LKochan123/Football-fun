@@ -10,7 +10,7 @@ cols = ["HS", "AS", "HST", "AST", "HF", "AF", "HC", "AC", "HY", "AY"]
 # Creating target column: 0 - Home_Team loss, 1 - Home_Team win, 2 - draw
 def data_cleaner(df: pd.DataFrame):
     df_copy = df.copy()
-    df_copy.loc[:, "target"] = np.where(df_copy["FTR"] == "H", 0, np.where(df_copy["FTR"] == "A", 2, 1))
+    df_copy["target"] = np.where(df_copy["FTR"] == "H", 0, np.where(df_copy["FTR"] == "A", 2, 1))
     return df_copy
 
 def get_all_team_matches(df: pd.DataFrame, name: str):
@@ -125,7 +125,7 @@ def get_team_avg_points(df: pd.DataFrame, team: str):
 def get_team_position(df: pd.DataFrame, team: str):
     final_table = calculate_final_table(df)
     team_row = final_table.loc[final_table['Team'] == team]
-    return team_row.index[0] + 1 if not team_row.empty else -1
+    return int(team_row.index[0] + 1 if not team_row.empty else -1)
 
 def calc_team_status(current_season_df: pd.DataFrame, last_seaons_df: list[pd.DataFrame], team: str):
     N = (TEAMS_IN_LEAGUE - 1) * 2
@@ -173,7 +173,7 @@ def calc_h2h_stats(current_season_df: pd.DataFrame, last_seasons_df: list[pd.Dat
 
     return curr_df
 
-def is_team_newcomer(current_season_df: pd.DataFrame, last_season_df: pd.DataFrame, team: str):
+def is_team_newcomer(last_season_df: pd.DataFrame, current_season_df: pd.DataFrame, team: str):
     last_season_table, current_season_table = calculate_final_table(last_season_df), calculate_final_table(current_season_df)
     return team in current_season_table['Team'].values and team not in last_season_table['Team'].values
 
@@ -188,44 +188,51 @@ def find_newcomer_teams_statistics(last_season_df: pd.DataFrame, current_season_
         } for name in newcomer_teams
     }
 
-def find_all_newjoiners(seasons_file_name: list[str]):
+def find_all_newjoiners(seasons_file_name: list[str], league_name: str):
     newjoiners_all = []
     for i in range(1, len(seasons_file_name)):
-        last_season, curr_season = pd.read_csv(f"./Data/Premier_league/{seasons_file_name[i-1]}.csv"), pd.read_csv(f"./Data/Premier_league/{seasons_file_name[i]}.csv")
+        last_season = pd.read_csv(f"../data/raw/{league_name}/{seasons_file_name[i-1]}.csv")
+        curr_season = pd.read_csv(f"../data/raw/{league_name}/{seasons_file_name[i]}.csv")
         curr_newjoiners_stats = find_newcomer_teams_statistics(last_season, curr_season)
         newjoiners_all.append(curr_newjoiners_stats)
     return newjoiners_all
 
-def calc_HT_cards(df: pd.DataFrame, N = 9):
-    red_cards_results = { i: { 'wins': 0, 'losses': 0, 'draws': 0 } for i in range(1, N)}
+def calc_HT_cards(df: pd.DataFrame, card = 'Y', N = 9):
+    cards_results = {i: { 'wins': 0, 'losses': 0, 'draws': 0 } for i in range(1, N)}
+
+    if card not in ['Y', 'R']:
+        raise ValueError("Argument 'card' must be 'Y' or 'R'.")
 
     for _, row in df.iterrows():
         for num in range(1, N):
-            if num == row['HY']:
+            if num == row[f'H{card}']:
                 if row['FTHG'] > row['FTAG']:
-                    red_cards_results[num]['wins'] += 1
+                    cards_results[num]['wins'] += 1
                 elif row['FTHG'] == row['FTAG']:
-                    red_cards_results[num]['draws'] += 1
+                    cards_results[num]['draws'] += 1
                 else:
-                    red_cards_results[num]['losses'] += 1
+                    cards_results[num]['losses'] += 1
 
-    return red_cards_results
+    return cards_results
 
 
-def calc_AT_cards(df: pd.DataFrame, N = 9):
-    red_cards_results = {i: { 'wins': 0, 'losses': 0, 'draws': 0 } for i in range(1, N)}
+def calc_AT_cards(df: pd.DataFrame, card = 'Y', N = 9):
+    cards_results = {i: { 'wins': 0, 'losses': 0, 'draws': 0 } for i in range(1, N)}
+
+    if card not in ['Y', 'R']:
+        raise ValueError("Argument 'card' must be 'Y' or 'R'.")
 
     for _, row in df.iterrows():
         for num in range(1, N):
-            if num == row['AY']:
+            if num == row[f'A{card}']:
                 if row['FTAG'] > row['FTHG']:
-                    red_cards_results[num]['wins'] += 1
+                    cards_results[num]['wins'] += 1
                 elif row['FTHG'] == row['FTAG']:
-                    red_cards_results[num]['draws'] += 1
+                    cards_results[num]['draws'] += 1
                 else:
-                    red_cards_results[num]['losses'] += 1
+                    cards_results[num]['losses'] += 1
 
-    return red_cards_results
+    return cards_results
 
 
 def count_results(df: pd.DataFrame):
