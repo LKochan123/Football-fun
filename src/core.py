@@ -189,13 +189,20 @@ def find_newcomer_teams_statistics(last_season_df: pd.DataFrame, current_season_
     }
 
 def find_all_newjoiners(seasons_file_name: list[str], league_name: str):
-    newjoiners_all = []
+    newjoiners_all, processed_data = [], []
+    
     for i in range(1, len(seasons_file_name)):
-        last_season = pd.read_csv(f"../data/raw/{league_name}/{seasons_file_name[i-1]}.csv")
-        curr_season = pd.read_csv(f"../data/raw/{league_name}/{seasons_file_name[i]}.csv")
+        last_season = pd.read_csv(f"../data/raw/{league_name}/{seasons_file_name[i-1]}")
+        curr_season = pd.read_csv(f"../data/raw/{league_name}/{seasons_file_name[i]}")
         curr_newjoiners_stats = find_newcomer_teams_statistics(last_season, curr_season)
         newjoiners_all.append(curr_newjoiners_stats)
-    return newjoiners_all
+    
+    for season, newcomers in enumerate(newjoiners_all, start=2005):
+        short_season = f"{season % 100:02d}/{(season % 100) + 1:02d}"
+        for team, stats in newcomers.items():
+            processed_data.append({'Season': short_season, 'Team': team, **stats})
+
+    return pd.DataFrame(processed_data)
 
 def calc_HT_cards(df: pd.DataFrame, card = 'Y', N = 9):
     cards_results = {i: { 'wins': 0, 'losses': 0, 'draws': 0 } for i in range(1, N)}
