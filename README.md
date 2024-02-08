@@ -20,6 +20,17 @@ Football-fun is a project where im doing machine learning prediction for matches
 
 - **tests/**
   - **test_data_validity/** `Data tests` - Scripts to validate the integrity and correctness of data.
+
+### Model features:
+- X_status - average points in last 3 or less seasons, newjoiners value is equal to 1.05.
+- XPTS_avg_N - average points in last N or less matches.
+- X_gd_N - difference between scored and lost goals in last N or less matches.
+- X_eff_N - ratio of shots on goal to all shots in last N or less matches.
+- XST_avg_N - average shots taken on target in last N or less matches.
+- X_H2H - average points in last 6 (3 seasons) or less games between specific rival. Newjoiners value is equal to 1.05.
+
+X ∈ {H, A} for both home and away team.
+In my case N = 5 but you can set this value according to your requirements.
  
 ### Results:
 In this project I used data from 4 leagues: Premier League, La Liga, Serie A and Ligue 1. The training set was for seasons 2008/09 - 2019/20 and test set was for 2020/21 - 2022/23. I used several different algorithms and below I will show the best result for each of leagues.
