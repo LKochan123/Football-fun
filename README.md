@@ -27,7 +27,7 @@ Football-fun is a project where im doing machine learning prediction for matches
 - X_gd_N - difference between scored and lost goals in last N or less matches.
 - X_eff_N - ratio of shots on goal to all shots in last N or less matches.
 - XST_avg_N - average shots taken on target in last N or less matches.
-- X_H2H - average points in last 6 (3 seasons) or less games between specific rival. Newjoiners value is equal to 1.05.
+- X_H2H - average points in last 3 or less seasons between specific rival. Newjoiners value is equal to 1.05.
 
 X ∈ {H, A} for both home and away team.
 In my case N = 5 but you can set this value according to your requirements.
